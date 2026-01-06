@@ -6,6 +6,20 @@ import { useAuth } from '@/context/AuthContext';
 import { quizApi } from '@/lib/quizApi';
 import type { QuestionCreate, ChoiceCreate } from '@/types/quiz';
 import Link from 'next/link';
+import { MdCheck, MdContentCopy, MdAdd, MdDelete, MdArrowBack } from "react-icons/md";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AdminLayout } from "@/components/layout/AdminLayout";
+import { PageLoader, LoadingSpinner } from "@/components/ui/loading-spinner";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Badge } from "@/components/ui/badge";
 
 interface QuestionFormData extends QuestionCreate {
   tempId: string;
@@ -29,6 +43,7 @@ export default function CreateQuiz() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [questions, setQuestions] = useState<QuestionFormData[]>([createEmptyQuestion()]);
+  const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState<{ id: number; link: string } | null>(null);
@@ -41,8 +56,17 @@ export default function CreateQuiz() {
     }
   }, [authLoading, isAuthenticated, router]);
 
+  // Set the first question as active initially
+  useEffect(() => {
+    if (questions.length > 0 && !activeQuestionId) {
+      setActiveQuestionId(questions[0].tempId);
+    }
+  }, []);
+
   const addQuestion = () => {
-    setQuestions([...questions, createEmptyQuestion()]);
+    const newQuestion = createEmptyQuestion();
+    setQuestions([...questions, newQuestion]);
+    setActiveQuestionId(newQuestion.tempId);
   };
 
   const removeQuestion = (tempId: string) => {
@@ -173,281 +197,301 @@ export default function CreateQuiz() {
   };
 
   if (authLoading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-lg w-full text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Quiz Created!</h2>
-          <p className="text-gray-500 mb-6">Your quiz is ready to share</p>
-          
-          <div className="bg-gray-50 rounded-lg p-4 mb-6">
-            <p className="text-sm text-gray-500 mb-2">Share this link:</p>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={success.link}
-                readOnly
-                className="flex-1 bg-white border border-gray-200 rounded px-3 py-2 text-sm"
-              />
-              <button
-                onClick={() => {
+      <AdminLayout title="Quiz Created">
+        <div className="max-w-2xl mx-auto py-12 px-4">
+          <div className="bg-card border rounded-xl shadow-lg p-8 text-center animate-in zoom-in-95 duration-300">
+            <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-6">
+              <MdCheck className="w-8 h-8 text-green-600 dark:text-green-400" />
+            </div>
+            <h2 className="text-3xl font-bold text-foreground mb-2">Quiz Created Successfully!</h2>
+            <p className="text-muted-foreground mb-8">Your quiz is ready to be shared with potential candidates.</p>
+            
+            <div className="bg-muted/50 p-6 rounded-lg border border-border mb-8 max-w-lg mx-auto">
+              <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2 block text-left">Share Link</Label>
+              <div className="flex gap-2">
+                <Input 
+                    readOnly 
+                    value={success.link} 
+                    className="flex-1 font-mono text-sm bg-background"
+                />
+                <Button variant="secondary" onClick={() => {
                   navigator.clipboard.writeText(success.link);
-                  alert('Link copied!');
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition"
-              >
-                Copy
-              </button>
+                  alert('Copied to clipboard!');
+                }}>
+                  <MdContentCopy className="mr-2 h-4 w-4" />
+                  Copy
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex justify-center gap-4">
+              <Button variant="outline" asChild>
+                <Link href="/admin/dashboard">Back to Dashboard</Link>
+              </Button>
+              <Button asChild>
+                <Link href={success.link.replace(window.location.origin, '')} target="_blank">
+                    View Quiz
+                </Link>
+              </Button>
             </div>
           </div>
-
-          <div className="flex gap-3 justify-center">
-            <Link
-              href={`/quiz/${success.id}`}
-              target="_blank"
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
-            >
-              Preview Quiz
-            </Link>
-            <Link
-              href="/admin/dashboard"
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
-              Go to Dashboard
-            </Link>
-          </div>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Link href="/admin/dashboard" className="text-gray-400 hover:text-gray-600">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </Link>
-            <h1 className="text-xl font-bold text-gray-800">Create New Quiz</h1>
-          </div>
-        </div>
-      </header>
-
-      {/* Form */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <form onSubmit={handleSubmit}>
+    <AdminLayout 
+        title="Create New Quiz"
+        actions={
+            <Button variant="ghost" size="sm" asChild>
+                <Link href="/admin/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+                    <MdArrowBack /> 
+                    Cancel & Return
+                </Link>
+            </Button>
+        }
+    >
+      <div className="max-w-4xl mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
-              {error}
-            </div>
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
 
-          {/* Quiz Details */}
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Quiz Details</h2>
-            
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                  Title *
-                </label>
-                <input
-                  id="title"
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  placeholder="Enter quiz title"
-                  required
-                />
-              </div>
+          {/* Quiz Details Section */}
+          <div className="bg-card border rounded-xl p-6 shadow-sm">
+             <div className="mb-6">
+                 <h2 className="text-lg font-semibold text-foreground mb-1">Quiz Details</h2>
+                 <p className="text-sm text-muted-foreground">Basic information about the quiz.</p>
+             </div>
+             
+             <div className="space-y-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="title">Quiz Title</Label>
+                    <Input
+                        id="title"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="e.g. Frontend React Assessment"
+                        required
+                        className="max-w-xl"
+                    />
+                </div>
+                
+                <div className="grid gap-2">
+                     <Label htmlFor="description">Description (Optional)</Label>
+                     <Textarea
+                        id="description"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="Briefly describe what this quiz covers..."
+                        className="resize-none"
+                    />
+                </div>
+             </div>
+          </div>
 
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
-                <textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
-                  rows={3}
-                  placeholder="Optional description for your quiz"
-                />
-              </div>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-foreground">Questions</h2>
+            <div className="text-sm text-muted-foreground">
+                Total: <span className="font-mono font-medium">{questions.length}</span>
             </div>
           </div>
 
-          {/* Questions */}
-          <div className="space-y-4 mb-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-gray-800">Questions</h2>
-              <button
-                type="button"
-                onClick={addQuestion}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+          {/* Questions List */}
+          <div className="space-y-6">
+            {questions.map((q, qIndex) => (
+              <Card 
+                key={q.tempId} 
+                className={`border-l-4 transition-all duration-200 overflow-hidden relative group ${
+                    activeQuestionId === q.tempId 
+                    ? 'border-l-primary shadow-md ring-1 ring-primary/20 scale-[1.01]' 
+                    : 'border-l-transparent opacity-80 hover:opacity-100 hover:border-l-muted-foreground/30'
+                }`}
+                onClick={() => setActiveQuestionId(q.tempId)}
               >
-                + Add Question
-              </button>
-            </div>
+                {/* Question Header / Number */}
+                <div className="absolute top-4 left-4 flex items-center gap-3">
+                     <Badge variant="outline" className="h-6 w-6 rounded-full flex items-center justify-center p-0 border-primary/20 bg-primary/5 text-primary">
+                         {qIndex + 1}
+                     </Badge>
+                     <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Question {qIndex + 1}</span>
+                </div>
 
-            {questions.map((question, qIndex) => (
-              <div key={question.tempId} className="bg-white rounded-xl shadow-sm p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <span className="text-sm font-medium text-gray-500">Question {qIndex + 1}</span>
+                <div className="absolute top-4 right-4">
                   {questions.length > 1 && (
-                    <button
+                    <Button
                       type="button"
-                      onClick={() => removeQuestion(question.tempId)}
-                      className="text-red-400 hover:text-red-600 text-sm"
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                      onClick={() => removeQuestion(q.tempId)}
+                      title="Remove Question"
                     >
-                      Remove
-                    </button>
+                      <MdDelete className="w-5 h-5" />
+                    </Button>
                   )}
                 </div>
 
-                <div className="space-y-4">
-                  {/* Question Type */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Question Type
-                    </label>
-                    <select
-                      value={question.question_type}
-                      onChange={(e) => updateQuestion(question.tempId, 'question_type', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                    >
-                      <option value="mcq">Multiple Choice</option>
-                      <option value="true_false">True / False</option>
-                      <option value="text">Text Answer</option>
-                    </select>
-                  </div>
+                <CardContent className="pt-14 pb-6">
+                    <div className="grid gap-6">
+                        {/* Question Text & Type */}
+                        <div className="grid md:grid-cols-[1fr,200px] gap-4">
+                            <div className="space-y-2">
+                                <Label>Question Text</Label>
+                                <Input
+                                    value={q.question_text}
+                                    onChange={(e) => updateQuestion(q.tempId, 'question_text', e.target.value)}
+                                    placeholder="What is the capital of France?"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Type</Label>
+                                <Select
+                                    value={q.question_type}
+                                    onValueChange={(value) =>
+                                        updateQuestion(q.tempId, 'question_type', value as any)
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="mcq">Multiple Choice</SelectItem>
+                                        <SelectItem value="true_false">True / False</SelectItem>
+                                        <SelectItem value="text">Short Answer</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
 
-                  {/* Question Text */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Question *
-                    </label>
-                    <textarea
-                      value={question.question_text}
-                      onChange={(e) => updateQuestion(question.tempId, 'question_text', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
-                      rows={2}
-                      placeholder="Enter your question"
-                      required
-                    />
-                  </div>
+                        {/* Answer Section Based on Type */}
+                        <div className="bg-muted/30 p-4 rounded-lg border border-border/50">
+                        {q.question_type === 'text' && (
+                            <div className="space-y-2">
+                                <Label>Correct Answer (Exact Match)</Label>
+                                <Input
+                                    value={q.correct_text_answer || ''}
+                                    onChange={(e) =>
+                                        updateQuestion(q.tempId, 'correct_text_answer', e.target.value)
+                                    }
+                                    placeholder="Enter the correct answer..."
+                                    required
+                                />
+                                <p className="text-xs text-muted-foreground">Case-insensitive comparison will be used.</p>
+                            </div>
+                        )}
 
-                  {/* MCQ Choices */}
-                  {question.question_type === 'mcq' && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Choices (select the correct answer)
-                      </label>
-                      <div className="space-y-2">
-                        {question.choices.map((choice, cIndex) => (
-                          <div key={cIndex} className="flex items-center gap-3">
-                            <input
-                              type="radio"
-                              name={`correct-${question.tempId}`}
-                              checked={choice.is_correct}
-                              onChange={() => updateChoice(question.tempId, cIndex, 'is_correct', true)}
-                              className="w-4 h-4 text-blue-600"
-                            />
-                            <input
-                              type="text"
-                              value={choice.choice_text}
-                              onChange={(e) => updateChoice(question.tempId, cIndex, 'choice_text', e.target.value)}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
-                              placeholder={`Choice ${cIndex + 1}`}
-                            />
-                          </div>
-                        ))}
-                      </div>
+                        {q.question_type === 'true_false' && (
+                            <div className="space-y-3">
+                                <Label>Correct Option</Label>
+                                <RadioGroup
+                                    value={q.choices.find(c => c.is_correct)?.choice_text || ''}
+                                    onValueChange={(val) => {
+                                        const newChoices = q.choices.map(c => ({
+                                            ...c,
+                                            is_correct: c.choice_text === val
+                                        }));
+                                        // We can't easily use updateQuestion for deep updates like this with the current helper
+                                        // so we'll do it manually here or update the helper? 
+                                        // Actually let's use a simpler approach:
+                                        setQuestions(prev => prev.map(qs => qs.tempId === q.tempId ? { ...qs, choices: newChoices } : qs));
+                                    }}
+                                >
+                                    <div className="flex items-center gap-6">
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="True" id={`t-${q.tempId}`} />
+                                            <Label htmlFor={`t-${q.tempId}`}>True</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="False" id={`f-${q.tempId}`} />
+                                            <Label htmlFor={`f-${q.tempId}`}>False</Label>
+                                        </div>
+                                    </div>
+                                </RadioGroup>
+                            </div>
+                        )}
+
+                        {q.question_type === 'mcq' && (
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center mb-1">
+                                    <Label>Choices</Label>
+                                    <span className="text-xs text-muted-foreground">Select the radio button for correct answer</span>
+                                </div>
+                                <RadioGroup
+                                    value={q.choices.findIndex(c => c.is_correct).toString()}
+                                    onValueChange={(val) => {
+                                        const idx = parseInt(val);
+                                        const newChoices = q.choices.map((c, i) => ({
+                                            ...c,
+                                            is_correct: i === idx
+                                        }));
+                                        setQuestions(prev => prev.map(qs => qs.tempId === q.tempId ? { ...qs, choices: newChoices } : qs));
+                                    }}
+                                >
+                                    <div className="grid gap-3">
+                                        {q.choices.map((choice, cIndex) => (
+                                            <div key={cIndex} className="flex items-center gap-3">
+                                                <RadioGroupItem value={cIndex.toString()} id={`c-${q.tempId}-${cIndex}`} />
+                                                <Input
+                                                    value={choice.choice_text}
+                                                    onChange={(e) =>
+                                                        updateChoice(q.tempId, cIndex, 'choice_text', e.target.value)
+                                                    }
+                                                    placeholder={`Option ${cIndex + 1}`}
+                                                    required
+                                                    className={choice.is_correct ? "border-green-500 ring-green-500/20" : ""}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </RadioGroup>
+                            </div>
+                        )}
+                        </div>
                     </div>
-                  )}
-
-                  {/* True/False */}
-                  {question.question_type === 'true_false' && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Correct Answer
-                      </label>
-                      <div className="flex gap-4">
-                        {question.choices.map((choice, cIndex) => (
-                          <label key={cIndex} className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name={`correct-${question.tempId}`}
-                              checked={choice.is_correct}
-                              onChange={() => updateChoice(question.tempId, cIndex, 'is_correct', true)}
-                              className="w-4 h-4 text-blue-600"
-                            />
-                            <span>{choice.choice_text}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Text Answer */}
-                  {question.question_type === 'text' && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Correct Answer *
-                      </label>
-                      <input
-                        type="text"
-                        value={question.correct_text_answer || ''}
-                        onChange={(e) => updateQuestion(question.tempId, 'correct_text_answer', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                        placeholder="Enter the correct answer"
-                        required={question.question_type === 'text'}
-                      />
-                      <p className="text-xs text-gray-400 mt-1">
-                        Answers will be matched case-insensitively
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
 
-          {/* Submit */}
-          <div className="flex justify-end gap-3">
-            <Link
-              href="/admin/dashboard"
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+          <div className="flex flex-col gap-4 pt-4 border-t">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={addQuestion}
+                className="w-full border-dashed border-2 py-8 h-auto flex flex-col gap-2 hover:bg-muted/50"
             >
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? 'Creating...' : 'Create Quiz'}
-            </button>
+                <div className="p-2 bg-background rounded-full shadow-sm">
+                    <MdAdd className="w-5 h-5" />
+                </div>
+                <span>Add Another Question</span>
+              </Button>
+
+              <div className="flex justify-end gap-3 mt-4">
+                 <Button type="button" variant="outline" asChild>
+                    <Link href="/admin/dashboard">Cancel</Link>
+                 </Button>
+                 <Button type="submit" disabled={isSubmitting} size="lg" className="min-w-[150px]">
+                    {isSubmitting ? (
+                        <>
+                           <LoadingSpinner size="sm" className="mr-2" /> Saving...
+                        </>
+                    ) : 'Create Quiz'}
+                 </Button>
+              </div>
           </div>
         </form>
-      </main>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }

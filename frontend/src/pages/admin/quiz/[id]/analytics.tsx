@@ -4,8 +4,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/context/AuthContext';
 import { quizApi } from '@/lib/quizApi';
+import { MdPoll, MdOutlineAssignment, MdChevronRight, MdClose, MdArrowBack } from "react-icons/md";
 import type { QuizAnalytics, QuizResult } from '@/types/quiz';
 import Link from 'next/link';
+import { AdminLayout } from '@/components/layout/AdminLayout';
+import { PageLoader } from '@/components/ui/loading-spinner';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Button } from "@/components/ui/button";
 
 export default function QuizAnalyticsPage() {
   const [analytics, setAnalytics] = useState<QuizAnalytics | null>(null);
@@ -59,9 +64,9 @@ export default function QuizAnalyticsPage() {
   };
 
   const getScoreColor = (percentage: number) => {
-    if (percentage >= 80) return 'text-green-600 bg-green-50';
-    if (percentage >= 60) return 'text-yellow-600 bg-yellow-50';
-    return 'text-red-600 bg-red-50';
+    if (percentage >= 80) return 'text-green-600 dark:text-green-400 bg-green-500/10';
+    if (percentage >= 60) return 'text-yellow-600 dark:text-yellow-400 bg-yellow-500/10';
+    return 'text-destructive bg-destructive/10';
   };
 
   const getAccuracyColor = (accuracy: number) => {
@@ -71,131 +76,126 @@ export default function QuizAnalyticsPage() {
   };
 
   if (authLoading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-red-50 border border-red-200 text-red-600 px-6 py-4 rounded-lg">
+      <AdminLayout>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-destructive/10 border border-destructive/20 text-destructive px-6 py-4 rounded-lg">
             {error}
           </div>
           <Link
             href="/admin/dashboard"
-            className="mt-4 inline-block text-blue-600 hover:text-blue-700"
+            className="mt-4 inline-block text-primary hover:text-primary/80"
           >
             ← Back to Dashboard
           </Link>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   if (!analytics) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <Link
-                href="/admin/dashboard"
-                className="text-blue-600 hover:text-blue-700 text-sm mb-1 inline-block"
-              >
-                ← Back to Dashboard
-              </Link>
-              <h1 className="text-2xl font-bold text-gray-800">
-                Analytics: {analytics.quiz_title}
-              </h1>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <AdminLayout
+      title={`Analytics: ${analytics.quiz_title}`}
+      actions={
+        <Button variant="outline" size="sm" asChild>
+            <Link href="/admin/dashboard" className="flex items-center gap-2">
+                <MdArrowBack /> Back to Dashboard
+            </Link>
+        </Button>
+      }
+    >
         {/* Summary Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="text-3xl font-bold text-blue-600">
+          <div className="bg-card border rounded-xl shadow-sm hover:shadow-md transition-all p-6 relative overflow-hidden group">
+            <div className="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                <MdPoll className="w-24 h-24" />
+            </div>
+            <div className="text-4xl font-extrabold text-primary mb-1 relative z-10">
               {analytics.total_submissions}
             </div>
-            <div className="text-gray-500 text-sm">Total Submissions</div>
+            <div className="text-muted-foreground text-sm font-medium relative z-10">Total Submissions</div>
           </div>
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="text-3xl font-bold text-green-600">
+          <div className="bg-card border rounded-xl shadow-sm hover:shadow-md transition-all p-6 relative overflow-hidden">
+            <div className="text-4xl font-extrabold text-green-600 dark:text-green-400 mb-1">
               {analytics.average_percentage}%
             </div>
-            <div className="text-gray-500 text-sm">Average Score</div>
+            <div className="text-muted-foreground text-sm font-medium">Average Score</div>
           </div>
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="text-3xl font-bold text-purple-600">
+          <div className="bg-card border rounded-xl shadow-sm hover:shadow-md transition-all p-6 relative overflow-hidden">
+            <div className="text-4xl font-extrabold text-purple-600 dark:text-purple-400 mb-1">
               {analytics.pass_rate}%
             </div>
-            <div className="text-gray-500 text-sm">Pass Rate (≥70%)</div>
+            <div className="text-muted-foreground text-sm font-medium">Pass Rate (≥70%)</div>
           </div>
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="text-3xl font-bold text-orange-600">
+          <div className="bg-card border rounded-xl shadow-sm hover:shadow-md transition-all p-6 relative overflow-hidden">
+            <div className="text-4xl font-extrabold text-orange-600 dark:text-orange-400 mb-1">
               {analytics.highest_score}/{analytics.total_submissions > 0 ? analytics.submissions[0]?.total_questions || 0 : 0}
             </div>
-            <div className="text-gray-500 text-sm">Highest Score</div>
+            <div className="text-muted-foreground text-sm font-medium">Highest Score</div>
           </div>
         </div>
 
         {analytics.total_submissions === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-            <div className="text-gray-400 mb-4">
-              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-gray-700 mb-2">No submissions yet</h3>
-            <p className="text-gray-500">Share your quiz to start collecting responses</p>
-          </div>
+          <EmptyState
+            icon={MdOutlineAssignment}
+            title="No submissions yet"
+            description="Share your quiz to start collecting responses"
+          />
         ) : (
           <>
             {/* Question Analytics */}
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Question Performance</h2>
-              <div className="space-y-4">
+            <div className="bg-card border rounded-xl shadow-sm mb-8 overflow-hidden">
+              <div className="px-6 py-4 border-b border-border bg-muted/30">
+                <h2 className="text-xl font-semibold text-foreground">Question Performance</h2>
+              </div>
+              <div className="p-6 space-y-6">
                 {analytics.question_analytics.map((q, idx) => (
-                  <div key={q.question_id} className="border-b border-gray-100 pb-4 last:border-0">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex-1">
-                        <span className="text-gray-400 text-sm mr-2">Q{idx + 1}.</span>
-                        <span className="text-gray-700">{q.question_text}</span>
-                        <span className="ml-2 text-xs px-2 py-1 bg-gray-100 text-gray-500 rounded">
-                          {q.question_type === 'mcq' ? 'MCQ' : q.question_type === 'true_false' ? 'T/F' : 'Text'}
-                        </span>
+                  <div key={q.question_id} className="group transition-all">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-3">
+                      <div className="flex-1 pr-4">
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">
+                                {idx + 1}
+                            </span>
+                             <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground border font-medium">
+                              {q.question_type === 'mcq' ? 'MCQ' : q.question_type === 'true_false' ? 'T/F' : 'Text'}
+                             </span>
+                        </div>
+                        <p className="text-foreground font-medium pl-8">{q.question_text}</p>
                       </div>
-                      <div className="text-right ml-4">
-                        <span className={`font-semibold ${q.accuracy >= 70 ? 'text-green-600' : q.accuracy >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
-                          {q.accuracy}%
-                        </span>
-                        <div className="text-gray-400 text-xs">
-                          {q.correct_answers}/{q.total_answers} correct
+                      <div className="flex items-center gap-4 mt-2 md:mt-0 pl-8 md:pl-0 w-full md:w-auto justify-between md:justify-end">
+                        <div className="text-right">
+                          <span className={`text-xl font-bold ${q.accuracy >= 70 ? 'text-green-600' : q.accuracy >= 50 ? 'text-yellow-600' : 'text-destructive'}`}>
+                            {q.accuracy}%
+                          </span>
+                          <p className="text-muted-foreground text-xs">Accuracy</p>
+                        </div>
+                         <div className="text-right border-l pl-4 py-1">
+                          <span className="text-lg font-bold text-foreground">
+                            {q.correct_answers}/{q.total_answers}
+                          </span>
+                          <p className="text-muted-foreground text-xs">Correct</p>
                         </div>
                       </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    {/* Visual Bar */}
+                    <div className="w-full bg-secondary rounded-full h-3 overflow-hidden">
                       <div
-                        className={`h-2 rounded-full ${getAccuracyColor(q.accuracy)}`}
+                        className={`h-full rounded-full transition-all duration-1000 ease-out ${getAccuracyColor(q.accuracy)}`}
                         style={{ width: `${q.accuracy}%` }}
-                      ></div>
+                      >
+                         <div className="w-full h-full opacity-20 bg-white/30 animate-[shimmer_2s_infinite]"></div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -203,58 +203,71 @@ export default function QuizAnalyticsPage() {
             </div>
 
             {/* Submissions Table */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-800">Submissions</h2>
+            <div className="bg-card border rounded-xl shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/30">
+                <h2 className="text-xl font-semibold text-foreground">Detailed Submissions</h2>
+                 <div className="text-sm text-muted-foreground">
+                    Total: <span className="font-medium text-foreground">{analytics.total_submissions}</span>
+                 </div>
               </div>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-border">
+                  <thead className="bg-muted/50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         Participant
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         Score
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Percentage
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        Performance
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         Submitted
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-card divide-y divide-border">
                     {analytics.submissions.map((submission) => (
-                      <tr key={submission.id} className="hover:bg-gray-50">
+                      <tr key={submission.id} className="hover:bg-muted/30 transition-colors group">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            {submission.taker_name || 'Anonymous'}
+                          <div className="flex items-center">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold mr-3">
+                                {(submission.taker_name || 'A')[0].toUpperCase()}
+                            </div>
+                            <div className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                              {submission.taker_name || 'Anonymous'}
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {submission.score} / {submission.total_questions}
+                          <div className="text-sm font-mono font-medium text-foreground">
+                            {submission.score} <span className="text-muted-foreground">/ {submission.total_questions}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-sm font-semibold rounded-full ${getScoreColor(submission.percentage)}`}>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                              submission.percentage >= 70 ? 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20' :
+                              submission.percentage >= 40 ? 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20' :
+                              'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20'
+                          }`}>
                             {submission.percentage}%
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(submission.submitted_at).toLocaleString()}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                          {new Date(submission.submitted_at).toLocaleDateString()} <span className="text-xs opacity-70">{new Date(submission.submitted_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button
                             onClick={() => viewSubmissionDetail(submission.id)}
-                            className="text-blue-600 hover:text-blue-800 font-medium"
+                            className="text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-1 bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-md"
                           >
-                            View Details
+                             <span>View</span>
+                             <MdChevronRight className="w-4 h-4" />
                           </button>
                         </td>
                       </tr>
@@ -268,70 +281,100 @@ export default function QuizAnalyticsPage() {
 
         {/* Submission Detail Modal */}
         {selectedSubmission && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+            <div className="bg-card border rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+              <div className="bg-muted/50 border-b px-6 py-4 flex justify-between items-start shrink-0">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800">
+                  <h3 className="text-xl font-bold text-foreground">
                     Submission Details
                   </h3>
-                  <p className="text-sm text-gray-500">
-                    {selectedSubmission.taker_name || 'Anonymous'} • Score: {selectedSubmission.score}/{selectedSubmission.total_questions} ({selectedSubmission.percentage}%)
-                  </p>
+                  <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                    <span className="font-medium text-foreground">{selectedSubmission.taker_name || 'Anonymous'}</span>
+                    <span>•</span>
+                    <span className={`font-mono font-medium ${selectedSubmission.percentage >= 70 ? 'text-green-600' : 'text-orange-600'}`}>
+                        {selectedSubmission.score}/{selectedSubmission.total_questions} ({selectedSubmission.percentage}%)
+                    </span>
+                  </div>
                 </div>
                 <button
                   onClick={() => setSelectedSubmission(null)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="p-1 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <MdClose className="w-6 h-6" />
                 </button>
               </div>
               
-              {isLoadingDetail ? (
-                <div className="p-8 flex justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-              ) : (
-                <div className="p-6 space-y-4">
-                  {selectedSubmission.answers.map((answer, idx) => (
-                    <div
-                      key={idx}
-                      className={`p-4 rounded-lg border ${answer.is_correct ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <span className="font-medium text-gray-800">
-                          Q{idx + 1}. {answer.question_text}
-                        </span>
-                        <span className={`text-sm font-medium px-2 py-1 rounded ${answer.is_correct ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
-                          {answer.is_correct ? '✓ Correct' : '✗ Incorrect'}
-                        </span>
-                      </div>
-                      <div className="text-sm space-y-1">
-                        <div>
-                          <span className="text-gray-500">Their answer: </span>
-                          <span className="text-gray-700">
-                            {answer.selected_choice_text || answer.text_answer || 'No answer'}
-                          </span>
-                        </div>
-                        {!answer.is_correct && (
-                          <div>
-                            <span className="text-gray-500">Correct answer: </span>
-                            <span className="text-green-700 font-medium">
-                              {answer.correct_choice || answer.correct_text || 'N/A'}
+              <div className="overflow-y-auto p-0 scroll-smooth">
+                 {isLoadingDetail ? (
+                    <div className="p-12 flex flex-col items-center justify-center text-muted-foreground">
+                      <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary border-t-transparent mb-4"></div>
+                      <p>Loading details...</p>
+                    </div>
+                  ) : (
+                    <div className="p-6 space-y-6">
+                      {selectedSubmission.answers.map((answer, idx) => (
+                        <div
+                          key={idx}
+                          className={`p-5 rounded-xl border transition-colors ${
+                              answer.is_correct 
+                              ? 'border-green-500/20 bg-green-500/5 dark:bg-green-500/10' 
+                              : 'border-red-500/20 bg-red-500/5 dark:bg-red-500/10'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between mb-3 gap-4">
+                            <div className="flex gap-3">
+                                <span className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border ${
+                                    answer.is_correct ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'
+                                }`}>
+                                    {idx + 1}
+                                </span>
+                                <span className="font-medium text-foreground text-sm leading-6">
+                                  {answer.question_text}
+                                </span>
+                            </div>
+                            <span className={`shrink-0 text-xs font-bold px-2.5 py-1 rounded-full border ${
+                                answer.is_correct 
+                                ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800' 
+                                : 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800'
+                            }`}>
+                              {answer.is_correct ? 'Correct' : 'Incorrect'}
                             </span>
                           </div>
-                        )}
-                      </div>
+                          
+                          <div className="ml-9 space-y-2 text-sm">
+                            <div className="grid grid-cols-[100px_1fr] gap-2 p-2 rounded bg-background/50">
+                              <span className="text-muted-foreground font-medium">Their Answer:</span>
+                              <span className={`font-medium ${answer.is_correct ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                {answer.selected_choice_text || answer.text_answer || <span className="italic text-muted-foreground">Skipped</span>}
+                              </span>
+                            </div>
+                            
+                            {!answer.is_correct && (
+                                <div className="grid grid-cols-[100px_1fr] gap-2 p-2 rounded bg-green-500/10 border border-green-500/20">
+                                  <span className="text-green-700 dark:text-green-400 font-medium">Correct Answer:</span>
+                                  <span className="text-foreground">
+                                    {answer.correct_choice || answer.correct_text || 'See question details'}
+                                  </span>
+                                </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              )}
+                  )}
+              </div>
+              
+              <div className="bg-muted/50 border-t p-4 flex justify-end shrink-0">
+                <button
+                    onClick={() => setSelectedSubmission(null)}
+                    className="px-4 py-2 bg-background border rounded-lg shadow-sm hover:bg-accent transition-colors text-sm font-medium"
+                >
+                    Close
+                </button>
+              </div>
             </div>
           </div>
         )}
-      </main>
-    </div>
+      </AdminLayout>
   );
 }

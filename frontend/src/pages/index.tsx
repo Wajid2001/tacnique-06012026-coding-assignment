@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
+import { MdAdd, MdShare, MdBarChart } from "react-icons/md";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,84 +18,86 @@ const geistMono = Geist_Mono({
 export default function Home() {
   return (
     <div
-      className={`${geistSans.className} ${geistMono.className} min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50`}
+      className={`${geistSans.className} ${geistMono.className} min-h-screen bg-background text-foreground transition-colors duration-300`}
     >
       {/* Header */}
       <header className="py-6 px-4">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-600">QuizMaster</h1>
-          <Link
-            href="/admin/login"
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
-          >
-            Admin Login
-          </Link>
+          <h1 className="text-2xl font-bold text-primary">QuizMaster</h1>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <Button asChild>
+              <Link href="/admin/login">Admin Login</Link>
+            </Button>
+          </div>
         </div>
       </header>
 
       {/* Hero */}
-      <main className="max-w-6xl mx-auto px-4 py-20 text-center">
-        <h2 className="text-5xl font-bold text-gray-800 mb-6">
-          Create & Share Quizzes
-          <br />
-          <span className="text-blue-600">Effortlessly</span>
-        </h2>
-        <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-          Build engaging quizzes with multiple choice, true/false, and text
-          questions. Share them with anyone and get instant results.
-        </p>
+      <main className="max-w-6xl mx-auto px-4 py-32 text-center">
+        <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
+            <h2 className="text-6xl font-extrabold text-foreground mb-8 tracking-tight">
+            Create & Share Quizzes
+            <br />
+            <span className="text-primary bg-primary/10 px-4 rounded-xl -rotate-1 inline-block transform">Effortlessly</span>
+            </h2>
+            <p className="text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
+            Build engaging quizzes with multiple choice, true/false, and text
+            questions. Share them with anyone and get instant results.
+            </p>
 
-        <div className="flex gap-4 justify-center">
-          <Link
-            href="/admin/login"
-            className="px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-semibold text-lg shadow-lg shadow-blue-200"
-          >
-            Start Creating Quizzes
-          </Link>
+            <div className="flex gap-6 justify-center">
+            <Button asChild size="lg" className="text-lg h-auto py-6 px-10 rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-1">
+                <Link href="/admin/login">Start Creating Quizzes</Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="text-lg h-auto py-6 px-10 rounded-2xl hover:bg-muted/50 transition-all">
+                <Link href="#features">Learn More</Link>
+            </Button>
+            </div>
         </div>
 
         {/* Features */}
-        <div className="grid md:grid-cols-3 gap-8 mt-24">
-          <div className="bg-white rounded-2xl p-8 shadow-sm">
-            <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-6 mx-auto">
-              <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-3">Easy Creation</h3>
-            <p className="text-gray-500">
+        <div id="features" className="grid md:grid-cols-3 gap-8 mt-32">
+          <Card className="border shadow-lg bg-card hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <CardHeader className="text-center pb-4 pt-8">
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                <MdAdd className="w-8 h-8 text-primary" />
+              </div>
+              <CardTitle className="text-2xl font-bold text-card-foreground">Easy Creation</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center text-muted-foreground pb-8 px-6 text-lg">
               Create quizzes in minutes with our intuitive question builder. Support for MCQ, True/False, and text answers.
-            </p>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white rounded-2xl p-8 shadow-sm">
-            <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-6 mx-auto">
-              <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-3">Easy Sharing</h3>
-            <p className="text-gray-500">
+          <Card className="border shadow-lg bg-card hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <CardHeader className="text-center pb-4 pt-8">
+              <div className="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                <MdShare className="w-8 h-8 text-green-600 dark:text-green-400" />
+              </div>
+              <CardTitle className="text-2xl font-bold text-card-foreground">Easy Sharing</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center text-muted-foreground pb-8 px-6 text-lg">
               Get a unique link for each quiz. Share via email, social media, or anywhere else. No signup required for takers.
-            </p>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white rounded-2xl p-8 shadow-sm">
-            <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center mb-6 mx-auto">
-              <svg className="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-3">Instant Results</h3>
-            <p className="text-gray-500">
+          <Card className="border shadow-lg bg-card hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <CardHeader className="text-center pb-4 pt-8">
+              <div className="w-16 h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                <MdBarChart className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+              </div>
+              <CardTitle className="text-2xl font-bold text-card-foreground">Instant Results</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center text-muted-foreground pb-8 px-6 text-lg">
               Quiz takers see their scores immediately after submission with detailed answer review.
-            </p>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="py-8 text-center text-gray-400 text-sm">
+      <footer className="py-8 text-center text-muted-foreground text-sm">
         <p>Built with Next.js and Django</p>
       </footer>
     </div>
