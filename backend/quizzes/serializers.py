@@ -154,3 +154,13 @@ class QuizSubmissionResultSerializer(serializers.ModelSerializer):
         model = QuizSubmission
         fields = ['id', 'quiz_title', 'taker_name', 'score',
                   'total_questions', 'percentage', 'submitted_at', 'answers']
+
+
+class QuizSubmissionAnalyticsSerializer(serializers.ModelSerializer):
+    """Serializer for submission analytics (table view)"""
+    percentage = serializers.FloatField(read_only=True)
+
+    class Meta:
+        model = QuizSubmission
+        fields = ['id', 'taker_name', 'score', 'total_questions', 
+                  'percentage', 'submitted_at']

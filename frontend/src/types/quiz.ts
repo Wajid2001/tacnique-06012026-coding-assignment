@@ -106,3 +106,35 @@ export interface RegisterResponse {
   };
   message: string;
 }
+
+// Analytics Types
+export interface QuestionAnalytics {
+  question_id: number;
+  question_text: string;
+  question_type: 'mcq' | 'true_false' | 'text';
+  total_answers: number;
+  correct_answers: number;
+  accuracy: number;
+}
+
+export interface SubmissionSummary {
+  id: number;
+  taker_name: string;
+  score: number;
+  total_questions: number;
+  percentage: number;
+  submitted_at: string;
+}
+
+export interface QuizAnalytics {
+  quiz_id: number;
+  quiz_title: string;
+  total_submissions: number;
+  average_score: number;
+  average_percentage: number;
+  highest_score: number;
+  lowest_score: number;
+  pass_rate: number;
+  question_analytics: QuestionAnalytics[];
+  submissions: SubmissionSummary[];
+}

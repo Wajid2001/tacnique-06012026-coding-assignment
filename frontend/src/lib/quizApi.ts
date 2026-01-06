@@ -5,6 +5,7 @@ import type {
   QuizCreate,
   QuizSubmit,
   QuizResult,
+  QuizAnalytics,
   LoginResponse,
   RegisterResponse,
   User,
@@ -42,6 +43,16 @@ export const quizApi = {
 
   create: async (quiz: QuizCreate): Promise<{ id: number; title: string; message: string; share_link: string }> => {
     const response = await api.post('/quizzes/create-with-questions/', quiz);
+    return response.data;
+  },
+
+  getAnalytics: async (id: number): Promise<QuizAnalytics> => {
+    const response = await api.get(`/quizzes/${id}/analytics/`);
+    return response.data;
+  },
+
+  getSubmissionDetail: async (quizId: number, submissionId: number): Promise<QuizResult> => {
+    const response = await api.get(`/quizzes/${quizId}/submissions/${submissionId}/`);
     return response.data;
   },
 };

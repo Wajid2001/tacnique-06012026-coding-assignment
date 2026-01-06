@@ -140,6 +140,12 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="flex gap-2">
+                    <Link
+                      href={`/admin/quiz/${quiz.id}/analytics`}
+                      className="px-4 py-2 text-sm font-medium text-purple-600 hover:bg-purple-50 rounded-lg transition"
+                    >
+                      Analytics
+                    </Link>
                     <button
                       onClick={() => copyShareLink(quiz.id)}
                       className="px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition"
