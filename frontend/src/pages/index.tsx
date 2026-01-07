@@ -47,7 +47,7 @@ export default function Home() {
             </p>
 
             <div className="flex gap-6 justify-center">
-            <Button asChild size="lg" className="text-lg h-auto py-6 px-10 rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-1">
+            <Button asChild size="lg" className="text-lg h-auto py-6 px-10 rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/30  hover:-translate-y-1 translate-y-0 !transition-all">
                 <Link href="/admin/login">Start Creating Quizzes</Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="text-lg h-auto py-6 px-10 rounded-2xl hover:bg-muted/50 transition-all">
@@ -58,7 +58,7 @@ export default function Home() {
 
         {/* Features */}
         <div id="features" className="grid md:grid-cols-3 gap-8 mt-32">
-          <Card className="border shadow-lg bg-card hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <Card className="border shadow-lg bg-card hover:shadow-xl translate-y-0 !transition-all duration-300 hover:-translate-y-1">
             <CardHeader className="text-center pb-4 pt-8">
               <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                 <MdAdd className="w-8 h-8 text-primary" />
@@ -70,7 +70,7 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <Card className="border shadow-lg bg-card hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <Card className="border shadow-lg bg-card hover:shadow-xl translate-y-0 !transition-all duration-300 hover:-translate-y-1">
             <CardHeader className="text-center pb-4 pt-8">
               <div className="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                 <MdShare className="w-8 h-8 text-green-600 dark:text-green-400" />
@@ -82,7 +82,7 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <Card className="border shadow-lg bg-card hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <Card className="border shadow-lg bg-card hover:shadow-xl translate-y-0 !transition-all duration-300 hover:-translate-y-1">
             <CardHeader className="text-center pb-4 pt-8">
               <div className="w-16 h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                 <MdBarChart className="w-8 h-8 text-purple-600 dark:text-purple-400" />
